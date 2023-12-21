@@ -66,7 +66,8 @@ File[] hiddenFiles = new File(".").listFiles(File::isHidden);
 ``` 
 자바 8에서는 메서드 참조 :: (= 이 메서드를 값으로 사용하라는 의미)를 이용해서 listFiles에 직접 전달할 수 있음
 <br>자바 8에서는 메서드가 일급 객체가 됨
-<br>기존에는 객체 참조 (new로 객체 참조를 생성함)를 이용해서 객체를 이리저리 주고 받았던 것 처럼 자바 8에서는 File::isHidden을 이용해서 메서드 참조를 만들어 전달할 수 있게 됨
+<br>기존에는 객체 참조 (new로 객체 참조를 생성함)를 이용해서 객체를 이리저리 주고 받았던 것 처럼 
+<br>자바 8에서는 File::isHidden을 이용해서 메서드 참조를 만들어 전달할 수 있게 됨
 
 <br>
 
@@ -76,7 +77,7 @@ File[] hiddenFiles = new File(".").listFiles(File::isHidden);
 
 <br>
 
-### 자바 8의 메서드 전달 예제
+## 자바 8의 메서드 전달 예제
 자바 8 이전
 ``` java
 // 모든 녹색 사과를 선택해서 리스트를 반환하는 프로그램 구현
@@ -133,16 +134,58 @@ filterApples(inventory, Apple::isHeavyApple);
 
 <br>
 
+### Predicate
+filterApples는 Apple::isGreenApple 메서드를 Predciate<Apple>이라는 타입의 파라미터로 받음
+<br>인수로 값을 받아 true나 false를 반환하는 함수를 Predicate라고 함
 
-## 디폴트 메서드라는 새로운 자바 8의 기능을 인터페이스, 라이브러리의 간결성 유지 및 재컴파일을 줄이는 데 어떻게 활용할 수 있는지
+<br>
 
-> 디폴트 메서드 = 메서드 본문은 클래스 구현이 아니라 인터페이스의 일부로 포함
-1. 자바8은 기존의 구현하지 않아도 되는 메서드를 인터페이스에 추가할 수 있는 기능을 제공함 <br>왜? 인터페이스를 쉽게 바꿀 수 있게 하기 위함 <br>→ 디폴트 메서드를 이용하면 기존의 코드를 건드리지 않고도 원래의 인터페이스 설계를 자유롭게 확장할 수 있음
-2. 자바9에서 모듈을 이용해 시스템의 구조를 만들 수 있음 <br>모듈 덕분에 JAR같은 컴포넌트에 구조를 적용할 수 있으며 문서화와 모듈 확인 작업이 용이해짐
+## 람다 활용
+한 두번만 사용할 메서드를 매번 정의하는 것은 번거로움
+<br>자바 8에서는 익명 함수 또는 람다라는 새로운 개념을 이용해서 이 문제도 간단히 해결 가능함
+``` java
+filterApples(inventory, (Apple a) -> "green".equals(a.getColor()));
+filterApples(inventory, (Apple a) -> a.getWeight() > 150);
+filterApples(inventory, (Apple a) -> a.getWeight() < 80 || "brown".equals(a.getColor()));
+``` 
+❗️하지만 람다가 몇 줄 이상으로 길어진다면 
+<br> &nbsp;&nbsp;&nbsp;&nbsp; 익명 람다 보다는 코드가 수행하는 일을 잘 설명하는 이름을 가진 메서드를 정의하고 메서드 참조를 활용하는 것이 바람직함
+<br> &nbsp;&nbsp;&nbsp;&nbsp; 코드의 명확성이 우선시 되어야 함
 
-모듈을 이용해 시스템의 구조를 만들 수 있고 디폴트 메소드를 이용해 기존 인터페이스를 구현하는 클래스를 바꾸지 않고도 인터페이스를 변경할 수 있음
+<br>
 
-<br><br>
+## 스트림 API
+스트림 API를 이용하면, 컬렉션 API는 상당히 다른 방식으로 데이터를 처리할 수 있음
+- 컬렉션에서는 for-each 루프를 이용해서 반복과정을 직접 처리해야 했음 (외부 반복)
+- 스트림은 루프를 신경 쓸 필요 없이 라이브러리 내부에서 모든 데이터가 처리 됨 (내부 반복)
+
+컬렉션을 이용할 때, 많은 요소를 가진 목록을 반복한다면 오랜 시간이 걸릴 수 있음
+<br>거대한 리스트의 경우 단일 CPU로는 처리하기 힘듦
+<br>멀티 코어 환경이라면 CPU 코어에 작업을 각각 할당해서 처리 시간을 줄일 수 있을 것임
+<br>
+
+### 멀티 스레딩 어려움
+자바 8은 스트림 API로 '컬렉션을 처리하면서 발생하는 반복적인 코드 문제'와 
+<br>'멀티 코어 활용 어려움'이라는 두 가지 문제를 모두 해결함
+스트림은 자주 반복되는 패턴으로 주어진 조건에 따라
+- 데이터를 필터링하거나 : .filter()
+- 데이터를 추출 : .map()
+- 데이터를 그룹화하는 등의 기능 제공 : .collect()
+
+<br>컬렉션은 어떻게 데이터를 저장하고 접근할지에 중점 두는 반면,
+<br>스트림은 데이터에 어떤 계산을 할 것인지 묘사하는 것에 중점 둠
+
+``` java
+List<Apple> heavyApples =
+    inventory.stream().filter((Apple a) -> a.getWeight() > 150)
+                                            .collect(toList());
+List<Apple> heavyApples =
+    inventory.parallelStream().filter((Apple a) -> a.getWeight() > 150)
+                                                    .collect(toList());
+```
+
+<br>
+
 
 # 🔎 알게된 점
 
