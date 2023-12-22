@@ -71,13 +71,13 @@ limit(n)을 통해서 처음 등장하는 주어진 값 N개의 요소를 가지
 
 ``` java
 List slicedMenu = menu.stream()
-                      .filter(dish -> dish.getCalories() > 300)
+                      .filter(dish -> dish.getCalories() > 300)
                       .limit(3)
                       .collect(toList());
 ```
 ``` java
 List slicedMenu = menu.stream()
-                      .filter(dish -> dish.getCalories() > 300)
+                      .filter(dish -> dish.getCalories() > 300)
                       .skip(2)
                       .collect(toList());
 ```
@@ -104,17 +104,43 @@ Dish::getName() 메서드를 .map() 메서드로 전달해서 스트림의 요�
 ``` java
 // map 을 연결하여 요리명의 글자수 추출
 List<String> dishNames = menu.stream()
-                        .map(Dish::getName)
-                        .map(String::length)
-                        .collect(toList());
+                            .map(Dish::getName)
+                            .map(String::length)
+                            .collect(toList());
 ```
 <br>
 
 ### flatMap
 스트림의 각 값을 다른 스트림으로 만든 다음 모든 스트림을 하나의 스트림으로 연결
-<br>
+<br>리스트에서 고유문자로 이루어진 리스트를 반환해보자.
+<br>예를 들어 ["hello", "world"] 리스트가 ["h", "e", "l", "o", "w", "r", "d"]가 되도록 변경
+``` java
+List<String> uniqueCharacters = words.stream()
+                                    .map(word -> word.split("")) // 각 단어를 개별 문자를 포함하는 배열로 변환
+                                    .distinct()
+                                    .collect(toList());
+```
+이 방식을 사용하면 string이 아닌 string[]으로 반환된다.
+<br>따라서, distinct를 대상이 글자 하나하나가 아닌, String[]이 대싱이 된다.
+<br>"h", "e", "l" 각각이 아닌, ["h", "e", "l", "l", "o"] 하나가 대상
 
-<br>
+<img width="506" alt="image" src="https://github.com/hyeyoungs/modern-java-in-action/assets/29566893/ee13c9a2-8283-4a3a-9ec3-ccf9c6879052">
+
+<br>해결 방법 : flatMap
+``` java
+List<String> uniqueCharacters = words.stream()
+                                    .map(word -> word.split("")) // 각 단어를 개별 문자로 포함하는 배열로 변환
+                                    .flatMap(Arrays::stream) // 생성된 스트림을 하나의 스트림으로 평면화
+                                    .distinct() // 
+                                    .collect(toList());
+```
+flatMap은 각 배열은 스트림이 아니라 스트림의 콘텐츠로 매핑
+<br>Arrays::stream은 문자열을 받아 스트림으로 바꾸어줌
+
+<img width="426" alt="image" src="https://github.com/hyeyoungs/modern-java-in-action/assets/29566893/c9ee7af4-a24c-423b-abaa-fe80778b5e4a">
+
+단어들이 하나의 스트림으로 묶어지므로, distinct으로 고유요소를 반환 가능해졌다.
+
 
 ## 스트림 검색과 매칭
 특정 속성이 데이터 집합에 있는지 여부, 즉 검색 처리도 스트림 API에서 제공
