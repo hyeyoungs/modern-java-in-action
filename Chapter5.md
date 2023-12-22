@@ -43,7 +43,6 @@ List<Integer> numbers = Arrays.asList(1, 2, 1, 3, 3, 2, 4)
 - 프리디케이트를 이용하는 방법
 - 스트림의 처음 몇 개의 요소를 무시하는 방법
 - 특정 크기로 스트림을 줄이는 방법 등 다양한 방법
-
 <br>
 
 ### takeWhile
